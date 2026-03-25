@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- Unity Ads SDK -->
     <script src="https://cdn.unityads.unity3d.com/adunit/2.0.0/UnityAds.js"></script>
     <style>
         * {
@@ -739,7 +738,6 @@
     <div class="bg-pattern"></div>
     
     <div class="container">
-        <!-- Header -->
         <div class="header">
             <div class="logo">EARNSTACK</div>
             <div class="user-info">
@@ -753,7 +751,6 @@
             </div>
         </div>
 
-        <!-- Stats -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon">
@@ -784,7 +781,6 @@
             </div>
         </div>
 
-        <!-- Daily Tasks -->
         <div class="section-header">
             <div class="section-title">
                 <i data-lucide="list-checks" style="width: 28px; height: 28px;"></i>
@@ -794,10 +790,8 @@
         </div>
 
         <div class="tasks-grid" id="tasksGrid">
-            <!-- Tasks will be populated by JavaScript -->
-        </div>
+            </div>
 
-        <!-- Referral Section -->
         <div class="referral-card">
             <div class="referral-content">
                 <div class="referral-header">
@@ -836,7 +830,6 @@
             </div>
         </div>
 
-        <!-- Redemption Section -->
         <div class="section-header">
             <div class="section-title">
                 <i data-lucide="gift" style="width: 28px; height: 28px;"></i>
@@ -872,7 +865,6 @@
         </div>
     </div>
 
-    <!-- Task Modal -->
     <div class="modal" id="taskModal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('taskModal')">×</button>
@@ -898,7 +890,6 @@
         </div>
     </div>
 
-    <!-- Redemption Modal -->
     <div class="modal" id="redeemModal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('redeemModal')">×</button>
@@ -920,7 +911,6 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
     <div class="toast" id="toast">
         <div class="toast-icon">
             <i data-lucide="check" style="width: 20px; height: 20px; color: white;"></i>
@@ -998,8 +988,9 @@
             
             try {
                 if (typeof UnityAds !== 'undefined') {
+                    // CRITICAL FIX: Set testMode to true for development
                     UnityAds.initialize(gameId, {
-                        testMode: false, // Set to false for production
+                        testMode: true, // Changed from false to true
                         deviceId: 'test-device-id',
                         gameId: gameId
                     });
@@ -1010,7 +1001,7 @@
                         console.log('Unity Ads ready status:', ready);
                         
                         if (ready) {
-                            showToast('Ads Ready!', 'Unity Ads loaded successfully');
+                            showToast('Ads Ready!', 'Unity Ads loaded successfully in Test Mode');
                         } else {
                             console.log('Unity Ads not ready yet, will retry...');
                             // Retry after 3 seconds
@@ -1018,7 +1009,9 @@
                                 UnityAds.isReady(placementId, function(retryReady) {
                                     unityAdsReady = retryReady;
                                     if (retryReady) {
-                                        showToast('Ads Ready!', 'Unity Ads loaded successfully');
+                                        showToast('Ads Ready!', 'Unity Ads loaded successfully in Test Mode');
+                                    } else {
+                                        console.warn('Ads failed to load. Check your Ad Blocker or Unity Dashboard.');
                                     }
                                 });
                             }, 3000);
@@ -1041,8 +1034,8 @@
 
                     console.log('Unity Ads SDK initialized successfully');
                 } else {
-                    console.warn('Unity Ads SDK not loaded. Using fallback mode.');
-                    showToast('Demo Mode', 'Unity Ads SDK not available in this browser');
+                    console.warn('Unity Ads SDK not loaded. Is your Ad Blocker turned on?');
+                    showToast('Demo Mode', 'Unity Ads SDK blocked or unavailable.');
                 }
             } catch (error) {
                 console.error('Unity Ads initialization error:', error);
@@ -1093,13 +1086,23 @@
         function loadState() {
             const saved = localStorage.getItem('earnstackState');
             if (saved) {
-                appState = { ...appState, ...JSON.parse(saved) };
+                // Ensure Set is preserved correctly
+                const parsed = JSON.parse(saved);
+                if (parsed.completedTasks) {
+                    parsed.completedTasks = new Set(parsed.completedTasks);
+                }
+                appState = { ...appState, ...parsed };
             }
         }
 
         // Save state to localStorage
         function saveState() {
-            localStorage.setItem('earnstackState', JSON.stringify(appState));
+            // Convert Set to Array for JSON stringification
+            const stateToSave = {
+                ...appState,
+                completedTasks: Array.from(appState.completedTasks)
+            };
+            localStorage.setItem('earnstackState', JSON.stringify(stateToSave));
         }
 
         // Render Tasks
