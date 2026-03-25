@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EarnStack - Daily Rewards & Tasks</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Unity Ads SDK -->
+    <script src="https://cdn.unityads.unity3d.com/adunit/2.0.0/UnityAds.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #FF6B35;
+            --primary-dark: #E5522E;
+            --secondary: #F7931E;
+            --success: #00D9A3;
+            --bg-dark: #0A0E27;
+            --bg-card: #151B3B;
+            --bg-card-hover: #1A2147;
+            --text: #FFFFFF;
+            --text-muted: #8B93B0;
+            --border: #252D52;
+            --accent-glow: rgba(255, 107, 53, 0.2);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-pattern {
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 107, 53, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(247, 147, 30, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-family: 'Space Mono', monospace;
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .points-badge {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 20px var(--accent-glow);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .profile-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .profile-btn:hover {
+            border-color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        .stat-info h3 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .stat-info p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Section Header */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-badge {
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Tasks Grid */
+        .tasks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .task-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .task-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .task-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--primary);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(255, 107, 53, 0.2);
+        }
+
+        .task-card:hover::before {
+            opacity: 1;
+        }
+
+        .task-card.completed {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .task-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+        }
+
+        .task-points {
+            background: var(--success);
+            color: var(--bg-dark);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .task-content h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .task-content p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .task-button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .task-button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .task-button.completed {
+            background: var(--success);
+            cursor: default;
+        }
+
+        /* Referral Section */
+        .referral-card {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .referral-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 107, 53, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .referral-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .referral-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .referral-header h3 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .referral-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .referral-stat {
+            text-align: center;
+        }
+
+        .referral-stat h4 {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--secondary);
+        }
+
+        .referral-stat p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .referral-code-box {
+            background: var(--bg-dark);
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .referral-code {
+            font-family: 'Space Mono', monospace;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--secondary);
+            letter-spacing: 2px;
+        }
+
+        .copy-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .share-btn {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-dark);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .share-btn:hover {
+            border-color: var(--primary);
+            background: var(--bg-card);
+        }
+
+        /* Redemption Section */
+        .redemption-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .redemption-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .redemption-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--secondary);
+            transform: translateY(-4px);
+        }
+
+        .redemption-icon {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 15px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            font-size: 32px;
+        }
+
+        .redemption-card h4 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .redemption-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        .redemption-amount {
+            font-family: 'Space Mono', monospace;
+            font-size: 14px;
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 24px;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: var(--text);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .modal-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        .modal-header h3 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .modal-header p {
+            color: var(--text-muted);
+        }
+
+        .modal-body {
+            margin-bottom: 30px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-dark);
+            color: var(--text);
+            font-size: 16px;
+            font-family: 'Outfit', sans-serif;
+            margin-bottom: 15px;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .modal-btn.primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .modal-btn.secondary {
+            background: var(--bg-dark);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .modal-btn.secondary:hover {
+            background: var(--bg-card);
+        }
+
+        /* Unity Ads Container */
+        .unity-ad-container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .ad-placeholder {
+            width: 100%;
+            max-width: 640px;
+            aspect-ratio: 16/9;
+            margin: 0 auto;
+            background: var(--bg-dark);
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .ad-loader {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--success);
+            padding: 20px 25px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            transform: translateX(500px);
+            transition: transform 0.3s ease-out;
+            z-index: 2000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--success);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .toast-content h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .toast-content p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tasks-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .redemption-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .share-buttons {
+                flex-direction: column;
+            }
+
+            .modal-content {
+                padding: 30px 20px;
+            }
+
+            .toast {
+                right: 20px;
+                left: 20px;
+                bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">EARNSTACK</div>
+            <div class="user-info">
+                <div class="points-badge">
+                    <i data-lucide="coins" style="width: 20px; height: 20px;"></i>
+                    <span id="totalPoints">0</span>
+                </div>
+                <button class="profile-btn" onclick="showProfile()">
+                    <i data-lucide="user" style="width: 20px; height: 20px;"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i data-lucide="trophy" style="width: 24px; height: 24px; color: white;"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="completedToday">0</h3>
+                    <p>Tasks Completed Today</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i data-lucide="flame" style="width: 24px; height: 24px; color: white;"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="streakDays">0</h3>
+                    <p>Day Streak</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i data-lucide="users" style="width: 24px; height: 24px; color: white;"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="referralCount">0</h3>
+                    <p>Referrals</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Tasks -->
+        <div class="section-header">
+            <div class="section-title">
+                <i data-lucide="list-checks" style="width: 28px; height: 28px;"></i>
+                Daily Tasks
+                <span class="section-badge" id="tasksRemaining">15 Available</span>
+            </div>
+        </div>
+
+        <div class="tasks-grid" id="tasksGrid">
+            <!-- Tasks will be populated by JavaScript -->
+        </div>
+
+        <!-- Referral Section -->
+        <div class="referral-card">
+            <div class="referral-content">
+                <div class="referral-header">
+                    <h3>Invite Friends & Earn More</h3>
+                    <div class="referral-stats">
+                        <div class="referral-stat">
+                            <h4 id="referralEarnings">0</h4>
+                            <p>Points Earned</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="referral-code-box">
+                    <div>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">Your Referral Code</p>
+                        <div class="referral-code" id="referralCode">EARN2024XYZ</div>
+                    </div>
+                    <button class="copy-btn" onclick="copyReferralCode()">
+                        <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
+                        Copy
+                    </button>
+                </div>
+                <div class="share-buttons">
+                    <button class="share-btn" onclick="shareVia('whatsapp')">
+                        <i data-lucide="message-circle" style="width: 18px; height: 18px;"></i>
+                        WhatsApp
+                    </button>
+                    <button class="share-btn" onclick="shareVia('twitter')">
+                        <i data-lucide="twitter" style="width: 18px; height: 18px;"></i>
+                        Twitter
+                    </button>
+                    <button class="share-btn" onclick="shareVia('telegram')">
+                        <i data-lucide="send" style="width: 18px; height: 18px;"></i>
+                        Telegram
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Redemption Section -->
+        <div class="section-header">
+            <div class="section-title">
+                <i data-lucide="gift" style="width: 28px; height: 28px;"></i>
+                Redeem Your Points
+            </div>
+        </div>
+
+        <div class="redemption-grid">
+            <div class="redemption-card" onclick="redeemOption('paypal')">
+                <div class="redemption-icon">💰</div>
+                <h4>PayPal Cash</h4>
+                <p>Direct cash payment</p>
+                <div class="redemption-amount">Min: 5,000 pts</div>
+            </div>
+            <div class="redemption-card" onclick="redeemOption('amazon')">
+                <div class="redemption-icon">🛍️</div>
+                <h4>Amazon Gift Card</h4>
+                <p>Shop anything on Amazon</p>
+                <div class="redemption-amount">Min: 3,000 pts</div>
+            </div>
+            <div class="redemption-card" onclick="redeemOption('google')">
+                <div class="redemption-icon">🎮</div>
+                <h4>Google Play</h4>
+                <p>Apps, games, and more</p>
+                <div class="redemption-amount">Min: 2,500 pts</div>
+            </div>
+            <div class="redemption-card" onclick="redeemOption('paytm')">
+                <div class="redemption-icon">📱</div>
+                <h4>Paytm Wallet</h4>
+                <p>Instant transfer</p>
+                <div class="redemption-amount">Min: 2,000 pts</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Modal -->
+    <div class="modal" id="taskModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('taskModal')">×</button>
+            <div class="modal-header">
+                <div class="modal-icon">
+                    <i data-lucide="play-circle" style="width: 40px; height: 40px; color: white;"></i>
+                </div>
+                <h3 id="modalTaskTitle">Watch Ad</h3>
+                <p id="modalTaskDesc">Complete this task to earn points</p>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <div class="unity-ad-container">
+                    <div class="ad-placeholder">
+                        <div class="ad-loader"></div>
+                        <p style="color: var(--text-muted);">Loading advertisement...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="closeModal('taskModal')">Cancel</button>
+                <button class="modal-btn primary" onclick="completeCurrentTask()">Complete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Redemption Modal -->
+    <div class="modal" id="redeemModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('redeemModal')">×</button>
+            <div class="modal-header">
+                <div class="modal-icon">
+                    <i data-lucide="gift" style="width: 40px; height: 40px; color: white;"></i>
+                </div>
+                <h3 id="redeemTitle">Redeem Points</h3>
+                <p>Enter your details to redeem</p>
+            </div>
+            <div class="modal-body">
+                <input type="text" class="modal-input" id="redeemEmail" placeholder="Email / Phone / Account ID">
+                <input type="number" class="modal-input" id="redeemAmount" placeholder="Points to redeem (e.g., 5000)">
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="closeModal('redeemModal')">Cancel</button>
+                <button class="modal-btn primary" onclick="confirmRedemption()">Redeem Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <div class="toast-icon">
+            <i data-lucide="check" style="width: 20px; height: 20px; color: white;"></i>
+        </div>
+        <div class="toast-content">
+            <h4 id="toastTitle">Success!</h4>
+            <p id="toastMessage">You earned 50 points</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Unity Ads Configuration
+        const UNITY_GAME_ID_ANDROID = '6069279';
+        const UNITY_GAME_ID_IOS = '6069278';
+        const PLACEMENT_ID = 'Rewarded_Android'; // Will change to Rewarded_iOS on iOS
+        
+        let unityAdsReady = false;
+        let currentAdWatched = false;
+
+        // App State
+        let appState = {
+            totalPoints: 0,
+            completedToday: 0,
+            streakDays: 1,
+            referralCount: 0,
+            referralEarnings: 0,
+            currentTask: null,
+            completedTasks: new Set(),
+            adsWatchedCount: 0
+        };
+
+        // Daily Tasks Configuration
+        const dailyTasks = [
+            { id: 1, icon: 'play-circle', title: 'Watch Rewarded Ad', desc: 'Watch a video advertisement', points: 50, type: 'ad' },
+            { id: 2, icon: 'video', title: 'Watch 5 Video Ads', desc: 'Complete 5 ad views', points: 250, type: 'ad_multiple' },
+            { id: 3, icon: 'download', title: 'Download App', desc: 'Install and open sponsored app', points: 500, type: 'download' },
+            { id: 4, icon: 'clipboard-list', title: 'Complete Survey', desc: 'Share your opinion (5 min)', points: 300, type: 'survey' },
+            { id: 5, icon: 'calendar-check', title: 'Daily Login Bonus', desc: 'Just for logging in today', points: 100, type: 'instant' },
+            { id: 6, icon: 'sparkles', title: 'Spin the Wheel', desc: 'Try your luck!', points: 150, type: 'game' },
+            { id: 7, icon: 'gift', title: 'Open Daily Gift', desc: 'Claim your daily reward', points: 75, type: 'instant' },
+            { id: 8, icon: 'instagram', title: 'Follow on Instagram', desc: 'Follow our Instagram page', points: 200, type: 'social' },
+            { id: 9, icon: 'youtube', title: 'Subscribe YouTube', desc: 'Subscribe to our channel', points: 200, type: 'social' },
+            { id: 10, icon: 'user-plus', title: 'Invite 3 Friends', desc: 'Share referral code', points: 600, type: 'referral' },
+            { id: 11, icon: 'edit', title: 'Complete Profile', desc: 'Add profile details', points: 150, type: 'profile' },
+            { id: 12, icon: 'trophy', title: 'Reach Level 5', desc: 'Complete tasks to level up', points: 400, type: 'milestone' },
+            { id: 13, icon: 'zap', title: 'Watch Ad Boost', desc: 'Double points for next ad', points: 100, type: 'ad' },
+            { id: 14, icon: 'star', title: 'Rate App', desc: 'Leave us a 5-star review', points: 250, type: 'review' },
+            { id: 15, icon: 'share-2', title: 'Share App', desc: 'Share on social media', points: 175, type: 'share' }
+        ];
+
+        // Detect platform (iOS or Android)
+        function detectPlatform() {
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            
+            if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                return 'ios';
+            } else if (/android/i.test(userAgent)) {
+                return 'android';
+            }
+            
+            // Default to Android for web/desktop testing
+            return 'android';
+        }
+
+        // Initialize Unity Ads
+        function initUnityAds() {
+            const platform = detectPlatform();
+            const gameId = platform === 'ios' ? UNITY_GAME_ID_IOS : UNITY_GAME_ID_ANDROID;
+            const placementId = platform === 'ios' ? 'Rewarded_iOS' : 'Rewarded_Android';
+            
+            console.log(`Initializing Unity Ads for ${platform} with Game ID: ${gameId}`);
+            
+            try {
+                if (typeof UnityAds !== 'undefined') {
+                    UnityAds.initialize(gameId, {
+                        testMode: false, // Set to false for production
+                        deviceId: 'test-device-id',
+                        gameId: gameId
+                    });
+
+                    // Check if ads are ready
+                    UnityAds.isReady(placementId, function(ready) {
+                        unityAdsReady = ready;
+                        console.log('Unity Ads ready status:', ready);
+                        
+                        if (ready) {
+                            showToast('Ads Ready!', 'Unity Ads loaded successfully');
+                        } else {
+                            console.log('Unity Ads not ready yet, will retry...');
+                            // Retry after 3 seconds
+                            setTimeout(() => {
+                                UnityAds.isReady(placementId, function(retryReady) {
+                                    unityAdsReady = retryReady;
+                                    if (retryReady) {
+                                        showToast('Ads Ready!', 'Unity Ads loaded successfully');
+                                    }
+                                });
+                            }, 3000);
+                        }
+                    });
+
+                    // Set up ad completion callback
+                    UnityAds.setFinishCallback(function(state) {
+                        if (state === 'COMPLETED') {
+                            currentAdWatched = true;
+                            console.log('Ad watched successfully!');
+                        } else if (state === 'SKIPPED') {
+                            showToast('Ad Skipped', 'Watch the full ad to earn points');
+                            currentAdWatched = false;
+                        } else {
+                            showToast('Ad Error', 'Please try again');
+                            currentAdWatched = false;
+                        }
+                    });
+
+                    console.log('Unity Ads SDK initialized successfully');
+                } else {
+                    console.warn('Unity Ads SDK not loaded. Using fallback mode.');
+                    showToast('Demo Mode', 'Unity Ads SDK not available in this browser');
+                }
+            } catch (error) {
+                console.error('Unity Ads initialization error:', error);
+                showToast('Ad Error', 'Failed to initialize ads');
+            }
+        }
+
+        // Show Unity Ad
+        function showUnityAd() {
+            const platform = detectPlatform();
+            const placementId = platform === 'ios' ? 'Rewarded_iOS' : 'Rewarded_Android';
+            
+            console.log('Attempting to show Unity Ad...');
+            
+            if (typeof UnityAds !== 'undefined' && unityAdsReady) {
+                try {
+                    UnityAds.show(placementId);
+                    console.log('Unity Ad displayed');
+                    return true;
+                } catch (error) {
+                    console.error('Error showing Unity Ad:', error);
+                    showToast('Ad Error', 'Failed to load ad. Please try again.');
+                    return false;
+                }
+            } else {
+                console.log('Unity Ads not ready or SDK not loaded');
+                // Fallback: Show simulated ad for testing
+                showToast('Demo Mode', 'Simulating ad for testing purposes');
+                setTimeout(() => {
+                    currentAdWatched = true;
+                    showToast('Ad Complete', 'Test ad finished');
+                }, 3000);
+                return true;
+            }
+        }
+
+        // Initialize App
+        function initApp() {
+            loadState();
+            renderTasks();
+            updateUI();
+            
+            // Initialize Unity Ads
+            initUnityAds();
+        }
+
+        // Load saved state from localStorage
+        function loadState() {
+            const saved = localStorage.getItem('earnstackState');
+            if (saved) {
+                appState = { ...appState, ...JSON.parse(saved) };
+            }
+        }
+
+        // Save state to localStorage
+        function saveState() {
+            localStorage.setItem('earnstackState', JSON.stringify(appState));
+        }
+
+        // Render Tasks
+        function renderTasks() {
+            const grid = document.getElementById('tasksGrid');
+            grid.innerHTML = dailyTasks.map(task => {
+                const completed = appState.completedTasks.has(task.id);
+                return `
+                    <div class="task-card ${completed ? 'completed' : ''}" onclick="openTask(${task.id})">
+                        <div class="task-header">
+                            <div class="task-icon">
+                                <i data-lucide="${task.icon}" style="width: 20px; height: 20px; color: var(--primary);"></i>
+                            </div>
+                            <div class="task-points">+${task.points}</div>
+                        </div>
+                        <div class="task-content">
+                            <h4>${task.title}</h4>
+                            <p>${task.desc}</p>
+                            <button class="task-button ${completed ? 'completed' : ''}">
+                                ${completed ? '✓ Completed' : 'Start Task'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            lucide.createIcons();
+        }
+
+        // Update UI
+        function updateUI() {
+            document.getElementById('totalPoints').textContent = appState.totalPoints.toLocaleString();
+            document.getElementById('completedToday').textContent = appState.completedToday;
+            document.getElementById('streakDays').textContent = appState.streakDays;
+            document.getElementById('referralCount').textContent = appState.referralCount;
+            document.getElementById('referralEarnings').textContent = appState.referralEarnings.toLocaleString();
+            
+            const remaining = dailyTasks.length - appState.completedTasks.size;
+            document.getElementById('tasksRemaining').textContent = `${remaining} Available`;
+        }
+
+        // Open Task
+        function openTask(taskId) {
+            const task = dailyTasks.find(t => t.id === taskId);
+            if (!task || appState.completedTasks.has(taskId)) return;
+            
+            appState.currentTask = task;
+            currentAdWatched = false;
+            
+            document.getElementById('modalTaskTitle').textContent = task.title;
+            document.getElementById('modalTaskDesc').textContent = task.desc;
+            
+            // Simulate different task types
+            let modalContent = '';
+            
+            if (task.type === 'ad' || task.type === 'ad_multiple') {
+                // For ad tasks, show the Unity Ad immediately
+                modalContent = `
+                    <div class="unity-ad-container">
+                        <div class="ad-placeholder">
+                            <p style="color: var(--text); font-size: 18px; font-weight: 600; margin-bottom: 15px;">
+                                ${unityAdsReady ? '✓ Unity Ads Ready' : '⏳ Loading Unity Ads...'}
+                            </p>
+                            <button class="task-button" onclick="launchUnityAd()" style="max-width: 300px; margin-bottom: 15px;">
+                                ${unityAdsReady ? '▶ Watch Ad Now' : '⏳ Please Wait...'}
+                            </button>
+                            <p style="color: var(--text-muted); font-size: 12px;">
+                                Unity Game ID: ${detectPlatform() === 'ios' ? UNITY_GAME_ID_IOS : UNITY_GAME_ID_ANDROID}
+                            </p>
+                            <p style="color: var(--text-muted); font-size: 12px; margin-top: 5px;">
+                                Placement: ${detectPlatform() === 'ios' ? 'Rewarded_iOS' : 'Rewarded_Android'}
+                            </p>
+                            <p id="adStatus" style="color: var(--success); font-size: 14px; margin-top: 15px; font-weight: 600;">
+                            </p>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('modalBody').innerHTML = modalContent;
+                document.getElementById('taskModal').classList.add('active');
+                
+                // Auto-check if ads are ready
+                if (!unityAdsReady && typeof UnityAds !== 'undefined') {
+                    const platform = detectPlatform();
+                    const placementId = platform === 'ios' ? 'Rewarded_iOS' : 'Rewarded_Android';
+                    
+                    UnityAds.isReady(placementId, function(ready) {
+                        unityAdsReady = ready;
+                        if (ready) {
+                            document.querySelector('.ad-placeholder button').textContent = '▶ Watch Ad Now';
+                            document.querySelector('.ad-placeholder button').disabled = false;
+                        }
+                    });
+                }
+                
+            } else if (task.type === 'download') {
+                modalContent = `
+                    <div style="text-align: center; padding: 20px;">
+                        <p style="margin-bottom: 20px;">Click the button below to visit the app store</p>
+                        <button class="task-button" style="max-width: 300px;">
+                            Open App Store
+                        </button>
+                        <p style="color: var(--text-muted); font-size: 12px; margin-top: 20px;">
+                            Install and open the app, then return here to claim points
+                        </p>
+                    </div>
+                `;
+            } else if (task.type === 'survey') {
+                modalContent = `
+                    <div style="text-align: center; padding: 20px;">
+                        <p style="margin-bottom: 20px;">Complete a short survey from our partners</p>
+                        <button class="task-button" style="max-width: 300px;">
+                            Start Survey
+                        </button>
+                    </div>
+                `;
+            } else {
+                modalContent = `
+                    <div style="text-align: center; padding: 40px;">
+                        <i data-lucide="${task.icon}" style="width: 60px; height: 60px; color: var(--primary); margin-bottom: 20px;"></i>
+                        <p>Complete this action to earn ${task.points} points!</p>
+                    </div>
+                `;
+            }
+            
+            if (task.type !== 'ad' && task.type !== 'ad_multiple') {
+                document.getElementById('modalBody').innerHTML = modalContent;
+                document.getElementById('taskModal').classList.add('active');
+            }
+            
+            lucide.createIcons();
+        }
+
+        // Launch Unity Ad
+        function launchUnityAd() {
+            console.log('Launch Unity Ad button clicked');
+            const statusEl = document.getElementById('adStatus');
+            
+            if (!unityAdsReady) {
+                statusEl.textContent = '⏳ Ads not ready yet. Please wait...';
+                statusEl.style.color = 'var(--secondary)';
+                return;
+            }
+            
+            statusEl.textContent = '📺 Loading ad...';
+            statusEl.style.color = 'var(--text-muted)';
+            
+            const adShown = showUnityAd();
+            
+            if (adShown) {
+                // Check if using fallback mode
+                if (typeof UnityAds === 'undefined' || !unityAdsReady) {
+                    // Simulated ad - auto complete after 3 seconds
+                    setTimeout(() => {
+                        if (currentAdWatched) {
+                            statusEl.textContent = '✓ Ad watched! Click Complete to claim points.';
+                            statusEl.style.color = 'var(--success)';
+                            appState.adsWatchedCount++;
+                        }
+                    }, 3000);
+                } else {
+                    // Real Unity Ad - wait for callback
+                    setTimeout(() => {
+                        if (currentAdWatched) {
+                            statusEl.textContent = '✓ Ad watched! Click Complete to claim points.';
+                            statusEl.style.color = 'var(--success)';
+                            appState.adsWatchedCount++;
+                        } else {
+                            statusEl.textContent = '⚠ Ad was skipped. Watch full ad to earn points.';
+                            statusEl.style.color = 'var(--secondary)';
+                        }
+                    }, 1000);
+                }
+            }
+        }
+
+        // Complete Current Task
+        function completeCurrentTask() {
+            if (!appState.currentTask) return;
+            
+            const task = appState.currentTask;
+            
+            // Verify ad was watched for ad tasks
+            if ((task.type === 'ad' || task.type === 'ad_multiple') && !currentAdWatched) {
+                showToast('Watch Required', 'Please watch the full ad to earn points');
+                return;
+            }
+            
+            // Add points
+            appState.totalPoints += task.points;
+            appState.completedToday++;
+            appState.completedTasks.add(task.id);
+            
+            // Save state
+            saveState();
+            
+            // Update UI
+            updateUI();
+            renderTasks();
+            
+            // Close modal
+            closeModal('taskModal');
+            
+            // Show toast
+            showToast(`+${task.points} Points!`, task.title + ' completed');
+            
+            // Reset
+            appState.currentTask = null;
+            currentAdWatched = false;
+        }
+
+        // Close Modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Show Toast
+        function showToast(title, message) {
+            document.getElementById('toastTitle').textContent = title;
+            document.getElementById('toastMessage').textContent = message;
+            
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Copy Referral Code
+        function copyReferralCode() {
+            const code = document.getElementById('referralCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                showToast('Copied!', 'Referral code copied to clipboard');
+            });
+        }
+
+        // Share Via Platform
+        function shareVia(platform) {
+            const code = document.getElementById('referralCode').textContent;
+            const message = `Join me on EarnStack and earn daily rewards! Use my code: ${code}`;
+            
+            let url = '';
+            switch(platform) {
+                case 'whatsapp':
+                    url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                    break;
+                case 'twitter':
+                    url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`;
+                    break;
+                case 'telegram':
+                    url = `https://t.me/share/url?url=${encodeURIComponent('earnstack.app')}&text=${encodeURIComponent(message)}`;
+                    break;
+            }
+            
+            if (url) {
+                window.open(url, '_blank');
+                showToast('Shared!', 'Thanks for spreading the word');
+            }
+        }
+
+        // Redeem Option
+        function redeemOption(type) {
+            const titles = {
+                paypal: 'PayPal Cash',
+                amazon: 'Amazon Gift Card',
+                google: 'Google Play Card',
+                paytm: 'Paytm Wallet'
+            };
+            
+            document.getElementById('redeemTitle').textContent = 'Redeem - ' + titles[type];
+            document.getElementById('redeemModal').classList.add('active');
+        }
+
+        // Confirm Redemption
+        function confirmRedemption() {
+            const email = document.getElementById('redeemEmail').value;
+            const amount = parseInt(document.getElementById('redeemAmount').value);
+            
+            if (!email || !amount) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            if (amount > appState.totalPoints) {
+                alert('Insufficient points!');
+                return;
+            }
+            
+            // Deduct points
+            appState.totalPoints -= amount;
+            saveState();
+            updateUI();
+            
+            closeModal('redeemModal');
+            showToast('Redemption Requested!', `${amount} points - Processing within 24-48 hours`);
+            
+            // Clear inputs
+            document.getElementById('redeemEmail').value = '';
+            document.getElementById('redeemAmount').value = '';
+        }
+
+        // Show Profile (placeholder)
+        function showProfile() {
+            showToast('Coming Soon', 'Profile page under development');
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', initApp);
+
+        // Close modal when clicking outside
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
